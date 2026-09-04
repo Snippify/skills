@@ -1,0 +1,10 @@
+interface:
+  display_name: "Snippify Team"
+  short_description: "Work with shared team Snippify knowledge"
+  default_prompt: "Use $snippify-team to work with knowledge shared through my Snippify team Workspace."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "snippify"
+      description: "Authenticated Snippify team Artifact MCP server"
+      transport: "streamable_http"

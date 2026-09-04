@@ -1,0 +1,10 @@
+interface:
+  display_name: "Snippify Private"
+  short_description: "Use private Snippify knowledge securely"
+  default_prompt: "Use $snippify-private to retrieve or save private knowledge in my Snippify Workspace."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "snippify"
+      description: "Authenticated Snippify private Artifact MCP server"
+      transport: "streamable_http"

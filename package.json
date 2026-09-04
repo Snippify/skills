@@ -1,0 +1,27 @@
+{
+  "name": "snippify-skills",
+  "version": "0.1.0",
+  "description": "Install Snippify Codex skills with npx.",
+  "license": "MIT",
+  "bin": {
+    "snippify-skills": "bin/install.js"
+  },
+  "files": [
+    "bin",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "install:skills": "node bin/install.js",
+    "pack:check": "npm pack --dry-run"
+  },
+  "keywords": [
+    "codex",
+    "skills",
+    "snippify"
+  ]
+}

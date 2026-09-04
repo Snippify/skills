@@ -1,0 +1,4 @@
+interface:
+  display_name: "Snippify Base"
+  short_description: "Attach metadata to files and Artifact drafts"
+  default_prompt: "Use $snippify-base to add missing file metadata or prepare metadata for a Snippify Artifact draft."

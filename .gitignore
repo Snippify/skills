@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Package manager and build output
+dist/
+build/
+out/
+coverage/
+*.tgz
+
+# Logs and temporary files
+*.log
+*.tmp
+.npm/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor and IDE state
+.idea/
+.vscode/
+.code/
