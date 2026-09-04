@@ -9,7 +9,7 @@ SKIP_LOGIN=0
 SNIPPIFY_URL="${SNIPPIFY_URL:-}"
 SNIPPIFY_CREDENTIALS_FILE="${SNIPPIFY_CREDENTIALS_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/snippify/credentials.env}"
 PUBLIC_MCP_URL="${SNIPPIFY_PUBLIC_MCP_URL:-http://127.0.0.1:8081/mcp}"
-PRIVATE_MCP_URL="${SNIPPIFY_PRIVATE_MCP_URL:-http://127.0.0.1:8081/mcp}"
+AUTHENTICATED_MCP_URL="${SNIPPIFY_AUTHENTICATED_MCP_URL:-${SNIPPIFY_PRIVATE_MCP_URL:-http://127.0.0.1:8081/mcp}}"
 
 usage() {
   cat <<'EOF'
@@ -20,28 +20,30 @@ Usage:
 
 Options:
   --agent codex        Agent host to configure. Only "codex" is supported now.
-  --mode all           Install all skills and public/private MCP connections.
+  --mode all           Install all skills and public/authenticated MCP connections.
   --mode global        Alias for all.
   --mode public        Install base/public skills and public MCP only.
-  --mode private       Install base/private skills and private MCP only.
+  --mode authenticated Install base/contribution skills and authenticated MCP only.
+  --mode private       Alias for authenticated.
   --public-url URL     Public Snippify MCP URL.
-  --private-url URL    Private Snippify MCP URL.
+  --authenticated-url URL  Authenticated Snippify MCP URL.
+  --private-url URL    Deprecated alias for --authenticated-url.
   --snippify-url URL   Snippify API URL used for login.
-  --credentials FILE   Credentials env file to write for private MCP.
-  --skip-login         Do not run "snippify login" before private setup.
+  --credentials FILE   Credentials env file to write for authenticated MCP.
+  --skip-login         Do not run "snippify login" before authenticated setup.
   -h, --help           Show this help.
 
 Environment:
-  SNIPPIFY_TOKEN            Agent Token for private MCP.
+  SNIPPIFY_TOKEN            Access token for authenticated MCP.
   SNIPPIFY_URL              Snippify API URL used for login.
   SNIPPIFY_CREDENTIALS_FILE Credentials env file to write.
   SNIPPIFY_PUBLIC_MCP_URL   Default public MCP URL.
-  SNIPPIFY_PRIVATE_MCP_URL  Default private MCP URL.
+  SNIPPIFY_AUTHENTICATED_MCP_URL Default authenticated MCP URL.
 
 Examples:
   ./install.sh
   ./install.sh --mode public
-  SNIPPIFY_TOKEN=... ./install.sh --mode private
+  SNIPPIFY_TOKEN=... ./install.sh --mode authenticated
 EOF
 }
 
@@ -91,7 +93,12 @@ while [ "$#" -gt 0 ]; do
       ;;
     --private-url)
       [ "$#" -ge 2 ] || die "--private-url requires a value"
-      PRIVATE_MCP_URL="$2"
+      AUTHENTICATED_MCP_URL="$2"
+      shift 2
+      ;;
+    --authenticated-url)
+      [ "$#" -ge 2 ] || die "--authenticated-url requires a value"
+      AUTHENTICATED_MCP_URL="$2"
       shift 2
       ;;
     --snippify-url)
@@ -122,11 +129,12 @@ done
 
 case "$MODE" in
   global) MODE="all" ;;
+  private) MODE="authenticated" ;;
 esac
 
 case "$MODE" in
-  all|public|private) ;;
-  *) die "Unsupported mode: $MODE. Use all, global, public, or private." ;;
+  all|public|authenticated) ;;
+  *) die "Unsupported mode: $MODE. Use all, global, public, authenticated, or private." ;;
 esac
 
 need_command npx
@@ -139,11 +147,10 @@ install_public_skills() {
     --agent "$AGENT"
 }
 
-install_private_skills() {
+install_authenticated_skills() {
   run npx --yes skills add "$PACKAGE_DIR" \
     --skill snippify-base \
-    --skill snippify-private \
-    --skill snippify-team \
+    --skill snippify-contribute \
     --agent "$AGENT"
 }
 
@@ -163,7 +170,7 @@ login_to_snippify() {
   }
 
   if [ "$SNIPPIFY_URL" = "" ]; then
-    die "SNIPPIFY_URL is required for private login. Fill it at the top of install.sh, export it, or pass --snippify-url."
+    die "SNIPPIFY_URL is required for authenticated login. Fill it at the top of install.sh, export it, or pass --snippify-url."
   fi
 
   printf 'Snippify username: '
@@ -198,47 +205,47 @@ write_credentials_file() {
   } > "$SNIPPIFY_CREDENTIALS_FILE"
   chmod 600 "$SNIPPIFY_CREDENTIALS_FILE" 2>/dev/null || true
 
-  printf 'Wrote private MCP credentials to %s\n' "$SNIPPIFY_CREDENTIALS_FILE"
+  printf 'Wrote authenticated MCP credentials to %s\n' "$SNIPPIFY_CREDENTIALS_FILE"
 }
 
-configure_private_mcp() {
+configure_authenticated_mcp() {
   if [ "$SKIP_LOGIN" -eq 0 ]; then
     login_to_snippify
   fi
 
   if [ "${SNIPPIFY_TOKEN:-}" = "" ]; then
-    printf '%s\n' "Private MCP requires a Snippify Agent Token with artifact:read and artifact:create scopes."
-    SNIPPIFY_TOKEN=$(prompt_secret 'Snippify Agent Token: ')
+    printf '%s\n' "Authenticated MCP requires a current Snippify access token."
+    SNIPPIFY_TOKEN=$(prompt_secret 'Snippify access token: ')
     export SNIPPIFY_TOKEN
   fi
 
-  [ "${SNIPPIFY_TOKEN:-}" != "" ] || die "SNIPPIFY_TOKEN is required for private MCP setup."
+  [ "${SNIPPIFY_TOKEN:-}" != "" ] || die "SNIPPIFY_TOKEN is required for authenticated MCP setup."
   write_credentials_file
 
-  if codex mcp get snippify-private >/dev/null 2>&1; then
-    printf '%s\n' "Codex MCP server already exists: snippify-private"
+  if codex mcp get snippify-authenticated >/dev/null 2>&1; then
+    printf '%s\n' "Codex MCP server already exists: snippify-authenticated"
     return
   fi
 
-  run codex mcp add snippify-private \
-    --url "$PRIVATE_MCP_URL" \
+  run codex mcp add snippify-authenticated \
+    --url "$AUTHENTICATED_MCP_URL" \
     --bearer-token-env-var SNIPPIFY_TOKEN
 }
 
 case "$MODE" in
   all)
     install_public_skills
-    install_private_skills
+    install_authenticated_skills
     configure_public_mcp
-    configure_private_mcp
+    configure_authenticated_mcp
     ;;
   public)
     install_public_skills
     configure_public_mcp
     ;;
-  private)
-    install_private_skills
-    configure_private_mcp
+  authenticated)
+    install_authenticated_skills
+    configure_authenticated_mcp
     ;;
 esac
 
@@ -250,14 +257,14 @@ case "$MODE" in
 esac
 
 case "$MODE" in
-  all|private) run codex mcp get snippify-private ;;
+  all|authenticated) run codex mcp get snippify-authenticated ;;
 esac
 
 cat <<'EOF'
 
 Snippify skills and MCP connections are installed for Codex.
 
-For private actions, start Codex from a shell where SNIPPIFY_TOKEN is set:
+For authenticated actions, start Codex from a shell where SNIPPIFY_TOKEN is set:
   export SNIPPIFY_TOKEN
   codex
 EOF

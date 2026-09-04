@@ -1,6 +1,6 @@
 ---
 name: snippify-skills-development
-description: Maintain this Snippify skills repository, including bundled skill files, npm/npx packaging, install.sh, and Codex MCP setup docs.
+description: Maintain this Snippify skills repository, including public discovery, authenticated contribution, npm/npx packaging, install.sh, and Codex MCP setup docs.
 ---
 
 # Snippify Skills Development
@@ -24,7 +24,7 @@ Keep agent support explicit. Do not add another agent name to scripts or docs un
 - `skills/*/references/` contains supporting docs loaded only when needed by a skill.
 - `bin/install.js` is the npm/npx entry point and should only install bundled skills with `npx skills add`.
 - `install.sh` is the client setup script for installing skills and Codex MCP connections.
-- `skills/SETUP.md` is the detailed local Snippify setup guide.
+- `README.md` documents installation and MCP connection setup.
 
 ## Installer Constraints
 
@@ -33,20 +33,18 @@ The npm installer should not configure local agent state. Keep it focused on ins
 The shell installer may configure local Codex state:
 
 - Install relevant Snippify skills.
-- Add the public Codex MCP connection.
-- Run `snippify login` when private setup is requested and the CLI is available.
-- Prompt for Snippify username and password during private setup.
+- Add the anonymous public Codex MCP connection.
+- Run `snippify login` when authenticated setup is requested and the CLI is available.
+- Prompt for Snippify username and password during authenticated setup.
 - Pass login credentials to `snippify login` without printing the password.
-- Write a restricted credentials env file for private MCP runtime values.
-- Configure private Codex MCP with `--bearer-token-env-var SNIPPIFY_TOKEN`.
+- Write a restricted credentials env file for authenticated MCP runtime values.
+- Configure authenticated Codex MCP with `--bearer-token-env-var SNIPPIFY_TOKEN`.
 
-Do not write plaintext passwords into repository files, committed config, examples, generated credential files, or shell history. Private MCP should read `SNIPPIFY_TOKEN` from the user's environment. If a credentials file is written, keep it outside the repository by default and set restrictive permissions.
+Do not write plaintext passwords into repository files, committed config, examples, generated credential files, or shell history. Authenticated MCP should read `SNIPPIFY_TOKEN` from the user's environment. If a credentials file is written, keep it outside the repository by default and set restrictive permissions.
 
 ## Auth Constraint
 
-Currently, `snippify login` stores API credentials but does not issue the Agent Token required by private MCP. The private MCP token must have `artifact:read` and `artifact:create` scopes.
-
-Until Snippify exposes production token issuance, installers should accept `SNIPPIFY_TOKEN` from the environment or prompt for it without echoing. Username/password login is still useful for the user's Snippify API session, but Codex private MCP must receive `SNIPPIFY_TOKEN` at runtime.
+Authenticated MCP uses a Snippify access JWT. Agent-login tokens identify suggestions as `agent`; user-login tokens identify them as `client`. Installers should accept the access token through `SNIPPIFY_TOKEN` or prompt without echoing. Never use a refresh token as the MCP bearer token.
 
 ## Verification
 

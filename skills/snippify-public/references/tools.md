@@ -1,35 +1,47 @@
 # Anonymous public MCP tools
 
-Both tools are read-only, idempotent, and require no token. The connected server remains authoritative if its discovered schema differs.
+These tools are read-only and require no token. The connected server remains authoritative if its discovered schema differs.
 
-## `list_public_artifacts`
+## `list_artifacts`
 
 Input:
 
 ```json
 {
-  "limit": 20,
-  "cursor": "optional-opaque-cursor"
+  "tag": "optional exact tag",
+  "purpose": "optional exact purpose"
 }
 ```
 
-- `limit` is optional, defaults to 20, and must be between 1 and 50.
-- `cursor` is optional. Reuse only the opaque `next_cursor` returned by the preceding page.
+- Both filters are optional and case-insensitive.
+- When both are present, both must match.
 
 The response contains compact Artifact entries with:
 
 - `id`
-- `type_key`
+- `tag`
+- `purpose`
+- `visibility`
 - `state`
-- `updated_at`
-- current approved version `id`, `version_number`, `title`, `summary`, `created_at`, and `is_current`
-- optional `next_cursor`
+- current approved version `id`, `version_number`, `suggested_user_id`, `suggested_by`, `review_status`, `title`, `summary`, and `files`
 
-Content and metadata are intentionally omitted from lists.
+Text is intentionally omitted from lists.
 
-## `get_public_artifact`
+## `search_artifacts`
 
-Current approved version:
+Input:
+
+```json
+{
+  "query": "retry policy"
+}
+```
+
+The result has the same compact shape as `list_artifacts`. Search covers Artifact tag and purpose plus the approved current version's title and summary.
+
+## `get_artifact`
+
+Input:
 
 ```json
 {
@@ -37,15 +49,6 @@ Current approved version:
 }
 ```
 
-Exact approved version:
+The response includes Artifact ID, tag, purpose, `public` visibility, active state, and the approved current version. The version includes identity, suggestion identity/type, review status, title, summary, nullable text, and file metadata.
 
-```json
-{
-  "artifact_id": "11111111-1111-4111-8111-111111111111",
-  "version_number": 2
-}
-```
-
-The response includes Artifact identity, type, `public` visibility, lifecycle state, current version ID, timestamps, version identity/title/summary, content, and metadata.
-
-Private and team Artifacts are indistinguishable from missing Artifacts. Draft and rejected versions are never returned, even when their UUID or version number is known.
+Non-public, inactive, draft-only, and missing Artifacts are indistinguishable through this tool.

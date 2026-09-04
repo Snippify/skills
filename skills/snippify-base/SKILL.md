@@ -1,6 +1,6 @@
 ---
 name: snippify-base
-description: Add a portable Snippify metadata header to reusable text files, or map the same metadata into a Snippify Artifact draft when an in-file comment is missing or unsafe. Use when preparing files or content for Snippify capture and upload.
+description: Add a portable Snippify metadata header to reusable files or map file content into the current Snippify Artifact creation and suggestion contracts.
 ---
 
 # Snippify Base
@@ -12,7 +12,8 @@ Give reusable content a small, consistent identity without changing its behavior
 Use a single-line JSON object prefixed by `snippify-metadata:`. Include:
 
 - `schema`: always `snippify/file-metadata/v1`.
-- `type_key`: a concise Artifact type such as `code`, `rule`, `prompt`, `skill`, `decision`, `workflow`, `documentation`, or `custom`.
+- `tag`: a concise discovery category such as `code`, `rule`, `prompt`, `skill`, `decision`, `workflow`, or `documentation`.
+- `purpose`: one concise statement of how the reusable material should be used.
 - `title`: a human-readable name, at most 240 bytes.
 - `summary`: one concise sentence describing the reusable purpose.
 - `source_path`: repository-relative path when known. Omit for content without a stable path.
@@ -24,7 +25,7 @@ Do not add owner, user, agent, Workspace, approval, visibility, review, trust, A
 Example payload, shown without a comment wrapper:
 
 ```text
-snippify-metadata: {"schema":"snippify/file-metadata/v1","type_key":"code","title":"Retry policy","summary":"Defines bounded retry behavior for outbound requests.","source_path":"internal/client/retry.go","language":"go","tags":["http","reliability"]}
+snippify-metadata: {"schema":"snippify/file-metadata/v1","tag":"code","purpose":"Reuse the outbound HTTP retry policy.","title":"Retry policy","summary":"Defines bounded retry behavior for outbound requests.","source_path":"internal/client/retry.go","language":"go","tags":["http","reliability"]}
 ```
 
 ## Add metadata to a file
@@ -44,19 +45,13 @@ Do not insert comments into JSON or another comment-free format. Do not edit bin
 
 ## Prepare a draft Artifact
 
-Before an authorized `save_artifact` call, read an existing header when present; otherwise infer the envelope from the selected content and path. Map it as follows:
+Before an authorized `create_artifact` or `suggest_artifact_version` call, read an existing header when present; otherwise infer the envelope from the selected content and path. Map it as follows:
 
-- `type_key`, `title`, and `summary` become the corresponding top-level `save_artifact` fields.
-- Put `schema`, and any available `source_path`, `language`, and `tags`, in the request's `metadata` object.
-- Put the reusable material in `content`; do not put credentials, personal data, raw transcripts, or unrelated repository content there.
+- `tag`, `purpose`, `title`, and `summary` become the corresponding tool fields.
+- Put the reusable material in `text`.
+- Map relevant files to `files` entries with `name`, `size`, `path`, and optional `summary`.
 
-Always send a non-empty metadata object for a draft prepared by this skill. If no optional fields apply, use:
-
-```json
-{"schema":"snippify/file-metadata/v1"}
-```
-
-Saving changes external state. Prepare metadata proactively, but call `save_artifact` only when the user has explicitly asked to capture, sync, save, or upload the content. Follow the connected server's current schema and `$snippify-private` for Workspace resolution, idempotency, authentication, and result reporting. Agent-created Artifacts remain private drafts pending human review.
+Creating or suggesting changes external state. Prepare metadata proactively, but call mutation tools only when the user explicitly asks to capture, sync, save, upload, or suggest the content. Follow the connected server's current schema and `$snippify-contribute` for authentication, draft replacement semantics, and result reporting.
 
 ## Report
 

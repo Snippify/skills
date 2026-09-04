@@ -6,9 +6,8 @@ const path = require("node:path");
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
 const DEFAULT_SKILLS = [
   "snippify-base",
-  "snippify-private",
   "snippify-public",
-  "snippify-team",
+  "snippify-contribute",
 ];
 
 function printHelp() {
