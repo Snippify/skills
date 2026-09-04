@@ -1,0 +1,4 @@
+interface:
+  display_name: "Snippify Skills Development"
+  short_description: "Maintain Snippify skill packaging and installers"
+  default_prompt: "Use $snippify-skills-development when changing this repository's skills, installers, or Codex MCP setup docs."

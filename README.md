@@ -13,6 +13,71 @@ That command installs all bundled skills into the current Codex environment:
 - `snippify-public`
 - `snippify-team`
 
+## Full Client Setup
+
+Use `install.sh` when a client should install skills and configure Codex MCP connections in one flow:
+
+```bash
+./install.sh
+```
+
+The script currently supports Codex only. It installs the bundled skills, adds the public MCP server, runs `snippify login` when available for private setup, and configures private MCP to read the Agent Token from `SNIPPIFY_TOKEN`.
+
+For private setup, fill `SNIPPIFY_URL` near the top of `install.sh`, export it, or pass it as an option:
+
+```bash
+./install.sh --snippify-url http://127.0.0.1:8080
+```
+
+When private skills are installed, the script asks for Snippify username/password, runs `snippify login`, then writes a restricted credentials env file containing `SNIPPIFY_URL`, `SNIPPIFY_USERNAME`, and `SNIPPIFY_TOKEN`. The password is not written to the file.
+
+Default credentials file:
+
+```bash
+~/.config/snippify/credentials.env
+```
+
+Load it before starting Codex:
+
+```bash
+. ~/.config/snippify/credentials.env
+codex
+```
+
+Public-only setup:
+
+```bash
+./install.sh --mode public
+```
+
+Full setup can also be requested as `global`:
+
+```bash
+./install.sh --mode global
+```
+
+Private-only setup with a token already available:
+
+```bash
+SNIPPIFY_TOKEN=... ./install.sh --mode private
+```
+
+Use a custom credentials file:
+
+```bash
+./install.sh \
+  --mode private \
+  --credentials ./.snippify-credentials.env
+```
+
+Use custom MCP URLs:
+
+```bash
+./install.sh \
+  --public-url http://127.0.0.1:8081/mcp \
+  --private-url http://127.0.0.1:8081/mcp
+```
+
 ## Install One Skill
 
 ```bash
@@ -67,6 +132,7 @@ npx snippify-skills --list
 From this repository:
 
 ```bash
+./install.sh --mode public
 npm run install:skills
 npm run pack:check
 ```

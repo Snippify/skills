@@ -13,6 +13,10 @@ coverage/
 *.tmp
 .npm/
 
+# Local credentials
+.snippify-credentials.env
+credentials.env
+
 # OS files
 .DS_Store
 Thumbs.db

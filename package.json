@@ -9,6 +9,7 @@
   "files": [
     "bin",
     "skills",
+    "install.sh",
     "README.md",
     "LICENSE"
   ],
