@@ -49,7 +49,7 @@ Before an authorized `create_artifact` or `suggest_artifact_version` call, read 
 
 - `tag`, `purpose`, `title`, and `summary` become the corresponding tool fields.
 - Put the reusable material in `text`.
-- Map relevant files to `files` entries with `name`, `size`, `path`, and optional `summary`.
+- Map relevant files to upload entries with `name`, base64 content, and a concise `summary`. Do not provide `path` or `size`; the server derives them.
 
 Creating or suggesting changes external state. Prepare metadata proactively, but call mutation tools only when the user explicitly asks to capture, sync, save, upload, or suggest the content. Follow the connected server's current schema and `$snippify-contribute` for authentication, draft replacement semantics, and result reporting.
 

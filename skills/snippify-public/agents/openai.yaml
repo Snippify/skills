@@ -1,7 +1,7 @@
 interface:
   display_name: "Snippify Public"
-  short_description: "Search public and owned private Artifacts"
-  default_prompt: "Use $snippify-public to find relevant public or owned private Artifacts in Snippify."
+  short_description: "Discover Artifacts, then fetch selected content"
+  default_prompt: "Use $snippify-public to discover relevant public or owned private Artifacts and retrieve only the content needed."
 dependencies:
   tools:
     - type: "mcp"
