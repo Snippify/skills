@@ -17,22 +17,30 @@ The package includes:
 Use the shell installer to install skills and configure Codex MCP connections:
 
 ```bash
-./install.sh
+curl -fsSL https://raw.githubusercontent.com/Snippify/skills/main/install.sh | sh
 ```
 
-Public-only setup:
+Or download it first with `curl`:
 
 ```bash
-./install.sh --mode public
+curl -fsSLO https://raw.githubusercontent.com/Snippify/skills/main/install.sh
+sh install.sh
 ```
 
-Authenticated contribution setup:
+Or with `wget`:
 
 ```bash
-SNIPPIFY_TOKEN=... ./install.sh --mode authenticated
+wget -q https://raw.githubusercontent.com/Snippify/skills/main/install.sh
+sh install.sh
 ```
 
-`SNIPPIFY_TOKEN` must be a current Snippify access token. Agent-login tokens mark suggestions as `agent`; user-login tokens mark them as `client`. Refresh tokens are not valid MCP bearer tokens.
+Set `SNIPPIFY_TOKEN` before running the installer to also configure authenticated contribution support:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Snippify/skills/main/install.sh | SNIPPIFY_TOKEN=... sh
+```
+
+Without a token, the installer configures public skills and the public MCP connection only. `SNIPPIFY_TOKEN` must be a current Snippify access token. Agent-login tokens mark suggestions as `agent`; user-login tokens mark them as `client`. Refresh tokens are not valid MCP bearer tokens.
 
 The default MCP endpoint is `http://127.0.0.1:8081/mcp`. Override it with `--public-url`, `--authenticated-url`, `SNIPPIFY_PUBLIC_MCP_URL`, or `SNIPPIFY_AUTHENTICATED_MCP_URL`.
 
