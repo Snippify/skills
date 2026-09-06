@@ -1,6 +1,6 @@
-# Anonymous public MCP tools
+# Read-only Artifact MCP tools
 
-These tools are read-only and require no token. The connected server remains authoritative if its discovered schema differs.
+These tools are read-only and support anonymous access. When the user already has an authenticated MCP connection, use that connection and let the MCP client attach its configured bearer header. Otherwise use the public connection without an Authorization header. The connected server remains authoritative if its discovered schema differs.
 
 ## `list_artifacts`
 
@@ -16,7 +16,12 @@ Input:
 - Both filters are optional and case-insensitive.
 - When both are present, both must match.
 
-The response contains compact Artifact entries with:
+The response contains:
+
+- `artifacts`: compact active public Artifact entries with approved current versions.
+- `my`: the authenticated user's matching active private Artifact entries with approved current versions. This key is omitted for anonymous callers and is present as an empty list when an authenticated caller has no matches.
+
+Each compact Artifact entry contains:
 
 - `id`
 - `tag`
@@ -37,7 +42,7 @@ Input:
 }
 ```
 
-The result has the same compact shape as `list_artifacts`. Search covers Artifact tag and purpose plus the approved current version's title and summary.
+The result has the same `artifacts` and optional `my` collections as `list_artifacts`. Search applies the same query to both collections and covers Artifact tag and purpose plus the approved current version's title and summary.
 
 ## `get_artifact`
 
@@ -49,6 +54,6 @@ Input:
 }
 ```
 
-The response includes Artifact ID, tag, purpose, `public` visibility, active state, and the approved current version. The version includes identity, suggestion identity/type, review status, title, summary, nullable text, and file metadata.
+The response includes Artifact ID, tag, purpose, visibility, active state, and the approved current version. The version includes identity, suggestion identity/type, review status, title, summary, nullable text, and file metadata.
 
-Non-public, inactive, draft-only, and missing Artifacts are indistinguishable through this tool.
+Anonymous callers can retrieve only public Artifacts. Authenticated callers can also retrieve their own private Artifacts. Another user's private Artifact, a team Artifact, an inactive or draft-only Artifact, and a missing Artifact are indistinguishable through this tool.

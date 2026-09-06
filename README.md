@@ -9,7 +9,7 @@ npx snippify-skills
 The package includes:
 
 - `snippify-base` for portable file metadata and Artifact request preparation.
-- `snippify-public` for anonymous public discovery and retrieval.
+- `snippify-public` for read-only public Artifact search, listing, and retrieval plus access to the authenticated user's own private Artifacts.
 - `snippify-contribute` for authenticated creation, owned-Artifact discovery, and version suggestions.
 
 ## Client setup
@@ -17,15 +17,13 @@ The package includes:
 Use the shell installer to install skills and configure Codex MCP connections:
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/Snippify/skills/main/install.sh
-sh install.sh
+curl -fsSL https://raw.githubusercontent.com/Snippify/skills/main/install.sh -o /tmp/snippify-install.sh && sh /tmp/snippify-install.sh
 ```
 
 Or with `wget`:
 
 ```bash
-wget -q https://raw.githubusercontent.com/Snippify/skills/main/install.sh
-sh install.sh
+wget -q https://raw.githubusercontent.com/Snippify/skills/main/install.sh -O /tmp/snippify-install.sh  && sh /tmp/snippify-install.sh
 ```
 
 The installer securely prompts for a Snippify access token. Leave it blank to install public skills and the public MCP connection only.

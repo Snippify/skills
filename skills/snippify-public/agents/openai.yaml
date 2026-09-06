@@ -1,10 +1,10 @@
 interface:
   display_name: "Snippify Public"
-  short_description: "Browse approved public Snippify knowledge"
-  default_prompt: "Use $snippify-public to find relevant public knowledge in Snippify."
+  short_description: "Search public and owned private Artifacts"
+  default_prompt: "Use $snippify-public to find relevant public or owned private Artifacts in Snippify."
 dependencies:
   tools:
     - type: "mcp"
       value: "snippify"
-      description: "Anonymous Snippify public Artifact MCP server"
+      description: "Snippify read-only Artifact MCP server with optional bearer authentication"
       transport: "streamable_http"
