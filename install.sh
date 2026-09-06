@@ -5,22 +5,20 @@ SKILLS_SOURCE="https://github.com/Snippify/skills"
 PUBLIC_URL="${SNIPPIFY_PUBLIC_MCP_URL:-http://127.0.0.1:8081/mcp}"
 AUTHENTICATED_URL="${SNIPPIFY_AUTHENTICATED_MCP_URL:-$PUBLIC_URL}"
 CREDENTIALS_FILE="${SNIPPIFY_CREDENTIALS_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/snippify/credentials.env}"
-MODE="auto"
 
 usage() {
   cat <<'EOF'
 Install Snippify skills and Codex MCP connections.
 
-Usage: ./install.sh [--mode public|authenticated] [options]
+Usage: ./install.sh [options]
 
 Options:
-  --mode MODE              Install public skills, or public and authenticated skills.
   --public-url URL         Public MCP endpoint.
   --authenticated-url URL  Authenticated MCP endpoint (defaults to the public endpoint).
   --credentials FILE       Where to save SNIPPIFY_TOKEN for Codex.
   -h, --help               Show this help.
 
-The installer reads an optional access token from standard input. Press Enter
+The installer securely reads SNIPPIFY_TOKEN from standard input. Press Enter
 to configure only public skills and the public MCP connection.
 EOF
 }
@@ -37,16 +35,14 @@ replace_mcp() {
 }
 
 read_token() {
-  [ -n "${SNIPPIFY_TOKEN:-}" ] && return
   printf 'Snippify access token (press Enter for public-only setup): ' >&2
   if [ -t 0 ]; then stty -echo; fi
-  IFS= read -r SNIPPIFY_TOKEN || SNIPPIFY_TOKEN=""
+  IFS= read -r SNIPPIFY_TOKEN || SNIPPIFY_TOKEN=''
   if [ -t 0 ]; then stty echo; printf '\n' >&2; fi
 }
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    --mode) [ "$#" -gt 1 ] || die "--mode requires a value"; MODE=$2; shift 2 ;;
     --public-url) [ "$#" -gt 1 ] || die "--public-url requires a value"; PUBLIC_URL=$2; shift 2 ;;
     --authenticated-url) [ "$#" -gt 1 ] || die "--authenticated-url requires a value"; AUTHENTICATED_URL=$2; shift 2 ;;
     --credentials) [ "$#" -gt 1 ] || die "--credentials requires a value"; CREDENTIALS_FILE=$2; shift 2 ;;
@@ -55,21 +51,12 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-case "$MODE" in
-  auto|authenticated) read_token ;;
-esac
-
-case "$MODE" in
-  auto) if [ -n "${SNIPPIFY_TOKEN:-}" ]; then MODE=authenticated; else MODE=public; fi ;;
-  public|authenticated) ;;
-  *) die "--mode must be public or authenticated" ;;
-esac
-if [ "$MODE" = authenticated ] && [ -z "${SNIPPIFY_TOKEN:-}" ]; then MODE=public; fi
+read_token
 
 need npx
 need codex
 
-if [ "$MODE" = authenticated ]; then
+if [ -n "$SNIPPIFY_TOKEN" ]; then
   npx --yes skills add "$SKILLS_SOURCE" --skill snippify-base --skill snippify-public --skill snippify-contribute --agent codex
 else
   npx --yes skills add "$SKILLS_SOURCE" --skill snippify-base --skill snippify-public --agent codex
@@ -77,7 +64,7 @@ fi
 
 replace_mcp snippify-public --url "$PUBLIC_URL"
 
-if [ "$MODE" = authenticated ]; then
+if [ -n "$SNIPPIFY_TOKEN" ]; then
   credentials_dir=$(dirname "$CREDENTIALS_FILE")
   umask 077
   mkdir -p "$credentials_dir"
@@ -86,5 +73,5 @@ if [ "$MODE" = authenticated ]; then
   replace_mcp snippify-authenticated --url "$AUTHENTICATED_URL" --bearer-token-env-var SNIPPIFY_TOKEN
   printf 'Installed authenticated Snippify support. Start Codex after: . %s\n' "$CREDENTIALS_FILE"
 else
-  printf '%s\n' 'Installed public Snippify support. Set SNIPPIFY_TOKEN and rerun for authenticated support.'
+  printf '%s\n' 'Installed public Snippify support. Run the installer again and enter a token for authenticated support.'
 fi

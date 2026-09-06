@@ -28,11 +28,7 @@ wget -q https://raw.githubusercontent.com/Snippify/skills/main/install.sh
 sh install.sh
 ```
 
-The installer prompts for an optional Snippify access token. Leave it blank to install public skills and the public MCP connection only. To pass the token without a prompt:
-
-```bash
-SNIPPIFY_TOKEN=... sh install.sh
-```
+The installer securely prompts for a Snippify access token. Leave it blank to install public skills and the public MCP connection only.
 
 Without a token, the installer configures public skills and the public MCP connection only. `SNIPPIFY_TOKEN` must be a current Snippify access token. Agent-login tokens mark suggestions as `agent`; user-login tokens mark them as `client`. Refresh tokens are not valid MCP bearer tokens.
 
