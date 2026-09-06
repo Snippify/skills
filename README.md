@@ -10,6 +10,7 @@ The package includes:
 
 - `snippify-base` for portable file metadata and Artifact request preparation.
 - `snippify-public` for read-only public Artifact search, listing, and retrieval plus access to the authenticated user's own private Artifacts.
+- `snippify-journal` for a compact project-local cache of retrieved candidates and file suggestions.
 - `snippify-contribute` for authenticated creation, owned-Artifact discovery, and version suggestions.
 
 ## Client setup
@@ -43,7 +44,8 @@ codex
 
 ```bash
 npx snippify-skills --skill snippify-public
-npx snippify-skills --skill snippify-base --skill snippify-contribute
+npx snippify-skills --skill snippify-journal
+npx snippify-skills --skill snippify-base --skill snippify-journal --skill snippify-contribute
 ```
 
 Install directly from this checkout:
@@ -52,6 +54,7 @@ Install directly from this checkout:
 npx skills add . \
   --skill snippify-base \
   --skill snippify-public \
+  --skill snippify-journal \
   --skill snippify-contribute \
   --agent codex
 ```

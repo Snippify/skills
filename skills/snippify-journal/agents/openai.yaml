@@ -1,0 +1,4 @@
+interface:
+  display_name: "Snippify Journal"
+  short_description: "Keep Snippify actions compact and reusable"
+  default_prompt: "Use $snippify-journal to record and reuse compact Snippify project state."

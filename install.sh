@@ -92,9 +92,9 @@ need codex
 need awk
 
 if [ -n "$SNIPPIFY_TOKEN" ]; then
-  npx --yes skills add "$SKILLS_SOURCE" --skill snippify-base --skill snippify-public --skill snippify-contribute --agent codex
+  npx --yes skills add "$SKILLS_SOURCE" --skill snippify-base --skill snippify-public --skill snippify-journal --skill snippify-contribute --agent codex
 else
-  npx --yes skills add "$SKILLS_SOURCE" --skill snippify-base --skill snippify-public --agent codex
+  npx --yes skills add "$SKILLS_SOURCE" --skill snippify-base --skill snippify-public --skill snippify-journal --agent codex
 fi
 
 replace_mcp snippify-public --url "$PUBLIC_URL"

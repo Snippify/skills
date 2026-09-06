@@ -7,6 +7,7 @@ const PACKAGE_ROOT = path.resolve(__dirname, "..");
 const DEFAULT_SKILLS = [
   "snippify-base",
   "snippify-public",
+  "snippify-journal",
   "snippify-contribute",
 ];
 

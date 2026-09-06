@@ -18,8 +18,9 @@ Use only Snippify's read-only Artifact tools to retrieve publicly shared knowled
 1. Use `search_artifacts` when the user provides discovery terms; it searches tag, purpose, and the approved candidate version's title and summary. Extract a short, specific query from a natural-language request instead of sending the entire instruction sentence.
 2. Use `list_artifacts` to browse or filter by exact tag, purpose, or both.
 3. Read `artifacts` as public results. When present, read `my` as the authenticated user's own private results; do not treat it as another user's data or as a list of drafts.
-4. Call `get_artifact` with a selected public Artifact ID or an ID from `my` to retrieve its approved candidate version text and file metadata.
-5. State the Artifact ID and version ID used, then apply the knowledge in the context of the user's current project.
+4. Before `get_artifact`, use `$snippify-journal` to reuse an already materialized copy when its candidate version matches the search/list result.
+5. Call `get_artifact` with a selected public Artifact ID or an ID from `my` when the journal is absent or stale, then record the successful retrieval in the journal.
+6. State the Artifact ID and version ID used, then apply the knowledge in the context of the user's current project.
 
 Read [references/tools.md](references/tools.md) when exact request or response fields are needed.
 

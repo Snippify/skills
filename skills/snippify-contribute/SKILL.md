@@ -28,6 +28,8 @@ Call `suggest_artifact_version` only when the user explicitly asks to propose or
 
 Each user may have only one draft suggestion per Artifact. A retry or later call updates that same draft and returns `created: false`; it does not create another version. Reuse the call only when replacing the user's draft is intended. Drafts always have `candidate: false`. Approved suggestions do not become readable unless the review workflow selects one as the Artifact's unique candidate, and they do not prevent a later new draft.
 
+For file suggestions, use `$snippify-journal` before the MCP call to skip an unchanged file that already produced the recorded draft. After a successful call, record the returned draft version and file hash. Do not journal failed calls or text-only suggestions.
+
 ## Boundaries
 
 - Never expose bearer tokens in arguments, files, output, logs, or Artifact text.
