@@ -6,6 +6,7 @@ MODE="all"
 PUBLIC_URL="${SNIPPIFY_PUBLIC_MCP_URL:-http://127.0.0.1:8081/mcp}"
 AUTHENTICATED_URL="${SNIPPIFY_AUTHENTICATED_MCP_URL:-$PUBLIC_URL}"
 CREDENTIALS_FILE="${SNIPPIFY_CREDENTIALS_FILE:-${XDG_CONFIG_HOME:-$HOME/.config}/snippify/credentials.env}"
+CODEX_CONFIG_FILE="${CODEX_HOME:-$HOME/.codex}/config.toml"
 
 usage() {
   cat <<'EOF'
@@ -25,7 +26,6 @@ For authenticated setup:
   export SNIPPIFY_TOKEN='PASTE_YOUR_TOKEN_HERE'
   curl -fsSL https://raw.githubusercontent.com/Snippify/skills/main/install.sh \
     | bash -s -- --mode authenticated --skip-login
-  . ~/.config/snippify/credentials.env
   codex
 EOF
 }
@@ -34,11 +34,25 @@ die() { printf '%s\n' "$*" >&2; exit 1; }
 
 need() { command -v "$1" >/dev/null 2>&1 || die "Required command not found: $1"; }
 
+shell_quote() { printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"; }
+
 replace_mcp() {
   name=$1
   shift
   if codex mcp get "$name" >/dev/null 2>&1; then codex mcp remove "$name"; fi
   codex mcp add "$name" "$@"
+}
+
+configure_headers_helper() {
+  case "$HEADERS_HELPER" in *'"'*|*'\'*) die "Unsupported credentials path: $CREDENTIALS_FILE" ;; esac
+  config_tmp="${CODEX_CONFIG_FILE}.tmp.$$"
+  awk -v helper="$HEADERS_HELPER" '
+    { print }
+    $0 == "[mcp_servers.snippify-authenticated]" {
+      print "http_headers_helper = \"" helper "\""
+    }
+  ' "$CODEX_CONFIG_FILE" > "$config_tmp"
+  mv "$config_tmp" "$CODEX_CONFIG_FILE"
 }
 
 read_token() {
@@ -70,11 +84,13 @@ while [ "$#" -gt 0 ]; do
 done
 
 case "$MODE" in all|public|authenticated) ;; *) die "Unsupported mode: $MODE" ;; esac
+HEADERS_HELPER="${CREDENTIALS_FILE}.headers"
 
 read_token
 
 need npx
 need codex
+need awk
 
 if [ -n "$SNIPPIFY_TOKEN" ]; then
   npx --yes skills add "$SKILLS_SOURCE" --skill snippify-base --skill snippify-public --skill snippify-contribute --agent codex
@@ -90,8 +106,15 @@ if [ -n "$SNIPPIFY_TOKEN" ]; then
   mkdir -p "$credentials_dir"
   printf 'export SNIPPIFY_TOKEN=%s\n' "$(printf '%s' "$SNIPPIFY_TOKEN" | sed "s/'/'\\\\''/g; s/^/'/; s/$/'/")" > "$CREDENTIALS_FILE"
   chmod 600 "$CREDENTIALS_FILE"
-  replace_mcp snippify-authenticated --url "$AUTHENTICATED_URL" --bearer-token-env-var SNIPPIFY_TOKEN
-  printf 'Installed authenticated Snippify support. Start Codex after: . %s\n' "$CREDENTIALS_FILE"
+  {
+    printf '#!/usr/bin/env sh\nset -eu\n. %s\n' "$(shell_quote "$CREDENTIALS_FILE")"
+    printf 'case "${SNIPPIFY_TOKEN:-}" in ""|*[!A-Za-z0-9._~-]*) exit 1 ;; esac\n'
+    printf 'printf '\''{"Authorization":"Bearer %%s"}'\'' "$SNIPPIFY_TOKEN"\n'
+  } > "$HEADERS_HELPER"
+  chmod 700 "$HEADERS_HELPER"
+  replace_mcp snippify-authenticated --url "$AUTHENTICATED_URL"
+  configure_headers_helper
+  printf '%s\n' 'Installed authenticated Snippify support. Restart Codex normally.'
 else
   if codex mcp get snippify-authenticated >/dev/null 2>&1; then codex mcp remove snippify-authenticated; fi
   printf '%s\n' 'Installed public Snippify support. Run the installer again and enter a token for authenticated support.'
