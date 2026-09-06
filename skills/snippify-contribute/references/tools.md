@@ -20,7 +20,7 @@ Input:
 }
 ```
 
-`tag`, `purpose`, and `title` are required. `summary`, nullable `text`, and `files` are optional. Each file input contains `name`, `summary`, and base64 content. Do not send `path` or `size`; the server derives them after persistence and returns them as output metadata.
+`tag`, `purpose`, and `title` are required. `summary`, nullable `text`, and `files` are optional. Each file input contains `name`, `summary`, and base64 content. Do not send `path` or `size`; the server derives them after persistence and returns them as output metadata. The returned draft version has `candidate: false`.
 
 Use `text` instead of `files` for standalone content or a script excerpt. For a whole file, use `files` and omit `text`; with multiple files, always leave `text` empty.
 
@@ -43,4 +43,4 @@ Input:
 
 `artifact_id` and `title` are required. The target must be active and public. File inputs never accept caller-provided `path` or `size`; those fields appear only in the returned stored-file metadata.
 
-The result includes `created` and the draft version. `created: false` means the authenticated user's existing draft was replaced in place, retaining its version identity and number.
+The result includes `created` and the draft version with `candidate: false`. `created: false` means the authenticated user's existing draft was replaced in place, retaining its version identity and number.

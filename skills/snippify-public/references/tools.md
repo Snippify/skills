@@ -18,8 +18,8 @@ Input:
 
 The response contains:
 
-- `artifacts`: compact active public Artifact entries with approved current versions.
-- `my`: the authenticated user's matching active private Artifact entries with approved current versions. This key is omitted for anonymous callers and is present as an empty list when an authenticated caller has no matches.
+- `artifacts`: compact active public Artifact entries with approved candidate versions.
+- `my`: the authenticated user's matching active private Artifact entries with approved candidate versions. This key is omitted for anonymous callers and is present as an empty list when an authenticated caller has no matches.
 
 Each compact Artifact entry contains:
 
@@ -28,7 +28,7 @@ Each compact Artifact entry contains:
 - `purpose`
 - `visibility`
 - `state`
-- current approved version `id`, `version_number`, `suggested_user_id`, `suggested_by`, `review_status`, `title`, `summary`, and `files`
+- `candidate`: the selected approved version, containing `id`, `version_number`, `suggested_user_id`, `suggested_by`, `review_status`, `candidate`, `title`, `summary`, and `files`
 
 Text is intentionally omitted from lists.
 
@@ -42,7 +42,7 @@ Input:
 }
 ```
 
-The result has the same `artifacts` and optional `my` collections as `list_artifacts`. Search applies the same query to both collections and covers Artifact tag and purpose plus the approved current version's title and summary.
+The result has the same `artifacts` and optional `my` collections as `list_artifacts`. Search applies the same query to both collections and covers Artifact tag and purpose plus the approved candidate version's title and summary. Use concise discovery terms such as `python jwt`; the server treats `query` as one case-insensitive substring rather than interpreting a full instruction.
 
 ## `get_artifact`
 
@@ -54,6 +54,6 @@ Input:
 }
 ```
 
-The response includes Artifact ID, tag, purpose, visibility, active state, and the approved current version. The version includes identity, suggestion identity/type, review status, title, summary, nullable text, and file metadata.
+The response includes Artifact ID, tag, purpose, visibility, active state, and `candidate`, the approved candidate version. The candidate includes identity, suggestion identity/type, review status, `candidate: true`, title, summary, nullable text, and file metadata.
 
-Anonymous callers can retrieve only public Artifacts. Authenticated callers can also retrieve their own private Artifacts. Another user's private Artifact, a team Artifact, an inactive or draft-only Artifact, and a missing Artifact are indistinguishable through this tool.
+Anonymous callers can retrieve only public Artifacts. Authenticated callers can also retrieve their own private Artifacts. Another user's private Artifact, a team Artifact, an inactive Artifact, an Artifact without an approved candidate, and a missing Artifact are indistinguishable through this tool.

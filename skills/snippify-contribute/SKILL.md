@@ -20,13 +20,13 @@ Read [references/tools.md](references/tools.md) when exact fields are needed. Re
 
 Call `create_artifact` only when the user explicitly asks to create, save, capture, sync, or upload reusable knowledge. Provide tag, purpose, title, summary, and either text or file uploads according to the rules above.
 
-The server derives ownership and suggestion identity from authentication. The new Artifact is active and public, but its first version is a draft and is not exposed by anonymous public reads until approved.
+The server derives ownership and suggestion identity from authentication. The new Artifact is active and public, but its first version is a draft with `candidate: false` and is not exposed by reads until a review workflow both approves it and selects it as the unique candidate.
 
 ## Suggest an update
 
 Call `suggest_artifact_version` only when the user explicitly asks to propose or save an update to a public Artifact. Use the exact target Artifact ID and provide the complete intended draft as either text or file uploads according to the rules above.
 
-Each user may have only one draft suggestion per Artifact. A retry or later call updates that same draft and returns `created: false`; it does not create another version. Reuse the call only when replacing the user's draft is intended. Approved suggestions do not prevent a later new draft.
+Each user may have only one draft suggestion per Artifact. A retry or later call updates that same draft and returns `created: false`; it does not create another version. Reuse the call only when replacing the user's draft is intended. Drafts always have `candidate: false`. Approved suggestions do not become readable unless the review workflow selects one as the Artifact's unique candidate, and they do not prevent a later new draft.
 
 ## Boundaries
 
