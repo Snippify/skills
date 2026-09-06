@@ -17,12 +17,6 @@ The package includes:
 Use the shell installer to install skills and configure Codex MCP connections:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Snippify/skills/main/install.sh | sh
-```
-
-Or download it first with `curl`:
-
-```bash
 curl -fsSLO https://raw.githubusercontent.com/Snippify/skills/main/install.sh
 sh install.sh
 ```
@@ -34,10 +28,10 @@ wget -q https://raw.githubusercontent.com/Snippify/skills/main/install.sh
 sh install.sh
 ```
 
-Set `SNIPPIFY_TOKEN` before running the installer to also configure authenticated contribution support:
+The installer prompts for an optional Snippify access token. Leave it blank to install public skills and the public MCP connection only. To pass the token without a prompt:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Snippify/skills/main/install.sh | SNIPPIFY_TOKEN=... sh
+SNIPPIFY_TOKEN=... sh install.sh
 ```
 
 Without a token, the installer configures public skills and the public MCP connection only. `SNIPPIFY_TOKEN` must be a current Snippify access token. Agent-login tokens mark suggestions as `agent`; user-login tokens mark them as `client`. Refresh tokens are not valid MCP bearer tokens.

@@ -20,8 +20,8 @@ Options:
   --credentials FILE       Where to save SNIPPIFY_TOKEN for Codex.
   -h, --help               Show this help.
 
-Set SNIPPIFY_TOKEN to install authenticated contribution support. Without it,
-the installer configures public skills and the public MCP connection only.
+The installer reads an optional access token from standard input. Press Enter
+to configure only public skills and the public MCP connection.
 EOF
 }
 
@@ -36,6 +36,14 @@ replace_mcp() {
   codex mcp add "$name" "$@"
 }
 
+read_token() {
+  [ -n "${SNIPPIFY_TOKEN:-}" ] && return
+  printf 'Snippify access token (press Enter for public-only setup): ' >&2
+  if [ -t 0 ]; then stty -echo; fi
+  IFS= read -r SNIPPIFY_TOKEN || SNIPPIFY_TOKEN=""
+  if [ -t 0 ]; then stty echo; printf '\n' >&2; fi
+}
+
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --mode) [ "$#" -gt 1 ] || die "--mode requires a value"; MODE=$2; shift 2 ;;
@@ -46,6 +54,10 @@ while [ "$#" -gt 0 ]; do
     *) die "Unknown option: $1" ;;
   esac
 done
+
+case "$MODE" in
+  auto|authenticated) read_token ;;
+esac
 
 case "$MODE" in
   auto) if [ -n "${SNIPPIFY_TOKEN:-}" ]; then MODE=authenticated; else MODE=public; fi ;;
