@@ -141,14 +141,14 @@ need_command npx
 need_command codex
 
 install_public_skills() {
-  run npx --yes skills add "$PACKAGE_DIR" \
+  run npx --yes skills add "$PACKAGE_DIR/skills" \
     --skill snippify-base \
     --skill snippify-public \
     --agent "$AGENT"
 }
 
 install_authenticated_skills() {
-  run npx --yes skills add "$PACKAGE_DIR" \
+  run npx --yes skills add "$PACKAGE_DIR/skills" \
     --skill snippify-base \
     --skill snippify-contribute \
     --agent "$AGENT"
