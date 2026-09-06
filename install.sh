@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-PACKAGE_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+SKILLS_SOURCE="https://github.com/Snippify/skills"
 AGENT="codex"
 MODE="all"
 SKIP_LOGIN=0
@@ -141,14 +141,14 @@ need_command npx
 need_command codex
 
 install_public_skills() {
-  run npx --yes skills add "$PACKAGE_DIR/skills" \
+  run npx --yes skills add "$SKILLS_SOURCE" \
     --skill snippify-base \
     --skill snippify-public \
     --agent "$AGENT"
 }
 
 install_authenticated_skills() {
-  run npx --yes skills add "$PACKAGE_DIR/skills" \
+  run npx --yes skills add "$SKILLS_SOURCE" \
     --skill snippify-base \
     --skill snippify-contribute \
     --agent "$AGENT"
@@ -223,8 +223,7 @@ configure_authenticated_mcp() {
   write_credentials_file
 
   if codex mcp get snippify-authenticated >/dev/null 2>&1; then
-    printf '%s\n' "Codex MCP server already exists: snippify-authenticated"
-    return
+    run codex mcp remove snippify-authenticated
   fi
 
   run codex mcp add snippify-authenticated \
@@ -260,11 +259,11 @@ case "$MODE" in
   all|authenticated) run codex mcp get snippify-authenticated ;;
 esac
 
-cat <<'EOF'
+printf '\n%s\n' "Snippify skills and MCP connections are installed for Codex."
 
-Snippify skills and MCP connections are installed for Codex.
-
-For authenticated actions, start Codex from a shell where SNIPPIFY_TOKEN is set:
-  export SNIPPIFY_TOKEN
-  codex
-EOF
+case "$MODE" in
+  all|authenticated)
+    printf '\nFor authenticated actions, load the credentials before starting Codex:\n'
+    printf '  . %s\n  codex\n' "$SNIPPIFY_CREDENTIALS_FILE"
+    ;;
+esac
