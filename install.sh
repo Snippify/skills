@@ -34,8 +34,6 @@ die() { printf '%s\n' "$*" >&2; exit 1; }
 
 need() { command -v "$1" >/dev/null 2>&1 || die "Required command not found: $1"; }
 
-shell_quote() { printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"; }
-
 replace_mcp() {
   name=$1
   shift
@@ -43,16 +41,18 @@ replace_mcp() {
   codex mcp add "$name" "$@"
 }
 
-configure_headers_helper() {
-  case "$HEADERS_HELPER" in *'"'*|*'\'*) die "Unsupported credentials path: $CREDENTIALS_FILE" ;; esac
+configure_authorization_header() {
+  case "$SNIPPIFY_TOKEN" in *[!A-Za-z0-9._~-]*) die "SNIPPIFY_TOKEN is not a valid JWT." ;; esac
+  export SNIPPIFY_TOKEN
   config_tmp="${CODEX_CONFIG_FILE}.tmp.$$"
-  awk -v helper="$HEADERS_HELPER" '
+  awk '
     { print }
     $0 == "[mcp_servers.snippify-authenticated]" {
-      print "http_headers_helper = \"" helper "\""
+      print "http_headers = { Authorization = \"Bearer " ENVIRON["SNIPPIFY_TOKEN"] "\" }"
     }
   ' "$CODEX_CONFIG_FILE" > "$config_tmp"
   mv "$config_tmp" "$CODEX_CONFIG_FILE"
+  chmod 600 "$CODEX_CONFIG_FILE"
 }
 
 read_token() {
@@ -84,7 +84,6 @@ while [ "$#" -gt 0 ]; do
 done
 
 case "$MODE" in all|public|authenticated) ;; *) die "Unsupported mode: $MODE" ;; esac
-HEADERS_HELPER="${CREDENTIALS_FILE}.headers"
 
 read_token
 
@@ -106,14 +105,8 @@ if [ -n "$SNIPPIFY_TOKEN" ]; then
   mkdir -p "$credentials_dir"
   printf 'export SNIPPIFY_TOKEN=%s\n' "$(printf '%s' "$SNIPPIFY_TOKEN" | sed "s/'/'\\\\''/g; s/^/'/; s/$/'/")" > "$CREDENTIALS_FILE"
   chmod 600 "$CREDENTIALS_FILE"
-  {
-    printf '#!/usr/bin/env sh\nset -eu\n. %s\n' "$(shell_quote "$CREDENTIALS_FILE")"
-    printf 'case "${SNIPPIFY_TOKEN:-}" in ""|*[!A-Za-z0-9._~-]*) exit 1 ;; esac\n'
-    printf 'printf '\''{"Authorization":"Bearer %%s"}'\'' "$SNIPPIFY_TOKEN"\n'
-  } > "$HEADERS_HELPER"
-  chmod 700 "$HEADERS_HELPER"
   replace_mcp snippify-authenticated --url "$AUTHENTICATED_URL"
-  configure_headers_helper
+  configure_authorization_header
   printf '%s\n' 'Installed authenticated Snippify support. Restart Codex normally.'
 else
   if codex mcp get snippify-authenticated >/dev/null 2>&1; then codex mcp remove snippify-authenticated; fi
